@@ -22,7 +22,6 @@
     <string name="pcview_menu_delete_pc">Delete PC</string>
     <string name="pcview_menu_test_network">Test Network Connection</string>
     <string name="pcview_menu_details">View Details</string>
-    <string name="pcview_menu_eol">NVIDIA GameStream End-of-Service</string>
 
     <!-- Network test strings -->
     <string name="nettest_title_waiting">Testing Network Connection</string>
@@ -101,7 +100,6 @@
     <string name="no">No</string>
     <string name="lost_connection">Lost connection to PC</string>
     <string name="title_details">Details</string>
-    <string name="help">Help</string>
     <string name="delete_pc_msg">Are you sure you want to delete this PC?</string>
     <string name="slow_connection_msg">Slow connection to PC\nReduce your bitrate</string>
     <string name="poor_connection_msg">Poor connection to PC</string>

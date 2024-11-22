@@ -7,8 +7,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.Button;
 
-import com.limelight.R;
-
 public class Dialog implements Runnable {
     private final String title;
     private final String message;
@@ -79,18 +77,6 @@ public class Dialog implements Runnable {
 
                   runOnDismiss.run();
               }
-        });
-        alert.setButton(AlertDialog.BUTTON_NEUTRAL, activity.getResources().getText(R.string.help), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                synchronized (rundownDialogs) {
-                    rundownDialogs.remove(Dialog.this);
-                    alert.dismiss();
-                }
-
-                runOnDismiss.run();
-
-                HelpLauncher.launchTroubleshooting(activity);
-            }
         });
         alert.setOnShowListener(new DialogInterface.OnShowListener(){
 
