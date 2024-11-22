@@ -303,16 +303,6 @@ public class StreamSettings extends Activity {
                 category.removePreference(findPreference("checkbox_usb_driver"));
             }
 
-            // Remove PiP mode on devices pre-Oreo, where the feature is not available (some low RAM devices),
-            // and on Fire OS where it violates the Amazon App Store guidelines for some reason.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !getActivity().getPackageManager().hasSystemFeature("android.software.picture_in_picture") ||
-                    getActivity().getPackageManager().hasSystemFeature("com.amazon.software.fireos")) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_ui_settings");
-                category.removePreference(findPreference("checkbox_enable_pip"));
-            }
-
             // Fire TV apps are not allowed to use WebViews or browsers, so hide the Help category
             /*if (getActivity().getPackageManager().hasSystemFeature("amazon.hardware.fire_tv")) {
                 PreferenceCategory category =

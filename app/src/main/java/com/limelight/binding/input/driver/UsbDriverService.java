@@ -21,7 +21,6 @@ import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.preferences.PreferenceConfiguration;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class UsbDriverService extends Service implements UsbDriverListener {
@@ -39,7 +38,6 @@ public class UsbDriverService extends Service implements UsbDriverListener {
     private final ArrayList<AbstractController> controllers = new ArrayList<>();
 
     private UsbDriverListener listener;
-    private UsbDriverStateListener stateListener;
     private int nextDeviceId;
 
     @Override
@@ -98,11 +96,6 @@ public class UsbDriverService extends Service implements UsbDriverListener {
             else if (action.equals(ACTION_USB_PERMISSION)) {
                 UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-                // Permission dialog is now closed
-                if (stateListener != null) {
-                    stateListener.onUsbPermissionPromptCompleted();
-                }
-
                 // If we got this far, we've already found we're able to handle this device
                 if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                     handleUsbDeviceState(device);
@@ -123,10 +116,6 @@ public class UsbDriverService extends Service implements UsbDriverListener {
             }
         }
 
-        public void setStateListener(UsbDriverStateListener stateListener) {
-            UsbDriverService.this.stateListener = stateListener;
-        }
-
         public void start() {
             UsbDriverService.this.start();
         }
@@ -143,11 +132,6 @@ public class UsbDriverService extends Service implements UsbDriverListener {
             if (!usbManager.hasPermission(device)) {
                 // Let's ask for permission
                 try {
-                    // Tell the state listener that we're about to display a permission dialog
-                    if (stateListener != null) {
-                        stateListener.onUsbPermissionPromptStarting();
-                    }
-
                     int intentFlags = 0;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         // This PendingIntent must be mutable to allow the framework to populate EXTRA_DEVICE and EXTRA_PERMISSION_GRANTED.
@@ -168,9 +152,6 @@ public class UsbDriverService extends Service implements UsbDriverListener {
                     usbManager.requestPermission(device, PendingIntent.getBroadcast(UsbDriverService.this, 0, i, intentFlags));
                 } catch (SecurityException e) {
                     Toast.makeText(this, this.getText(R.string.error_usb_prohibited), Toast.LENGTH_LONG).show();
-                    if (stateListener != null) {
-                        stateListener.onUsbPermissionPromptCompleted();
-                    }
                 }
                 return;
             }
@@ -338,16 +319,10 @@ public class UsbDriverService extends Service implements UsbDriverListener {
 
         // Remove listeners
         listener = null;
-        stateListener = null;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
-    }
-
-    public interface UsbDriverStateListener {
-        void onUsbPermissionPromptStarting();
-        void onUsbPermissionPromptCompleted();
     }
 }

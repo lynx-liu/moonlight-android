@@ -116,8 +116,6 @@
     <string name="title_checkbox_stretch_video"> 将画面拉伸至全屏 </string>
     <string name="title_checkbox_disable_warnings"> 禁用错误提示 </string>
     <string name="summary_checkbox_disable_warnings"> 串流中禁用连接错误提示 </string>
-    <string name="title_checkbox_enable_pip">启用画中画观察模式</string>
-    <string name="summary_checkbox_enable_pip">允许多任务时观看串流画面（但不操作）</string>
     <string name="category_audio_settings"> 音频设置 </string>
     <string name="title_audio_config_list"> 环绕声设置 </string>
     <string name="summary_audio_config_list"> 为家庭影院系统启用5.1或7.1环绕声 </string>
@@ -152,7 +150,6 @@
     <string name="dialog_title_reset_osc"> 重置按钮布局 </string>
     <string name="dialog_text_reset_osc"> 你确定要删除所保存的屏幕按钮布局吗？ </string>
     <string name="toast_reset_osc_success"> 屏幕按钮布局已经重置 </string>
-    <string name="category_ui_settings"> 界面设置 </string>
     <string name="category_host_settings"> 主机设置 </string>
     <string name="title_checkbox_enable_sops"> 优化游戏设置 </string>
     <string name="summary_checkbox_enable_sops"> 允许GFE为最佳串流效果自动更改游戏设置 </string>
