@@ -27,7 +27,6 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     private static final int ART_WIDTH_PX = 300;
-    private static final int SMALL_WIDTH_DP = 100;
     private static final int LARGE_WIDTH_DP = 150;
 
     private final ComputerDetails computer;
@@ -74,24 +73,12 @@ public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     }
 
     private static int getLayoutIdForPreferences(PreferenceConfiguration prefs) {
-        if (prefs.smallIconMode) {
-            return R.layout.app_grid_item_small;
-        }
-        else {
-            return R.layout.app_grid_item;
-        }
+        return R.layout.app_grid_item;
     }
 
     public void updateLayoutWithPreferences(Context context, PreferenceConfiguration prefs) {
         int dpi = context.getResources().getDisplayMetrics().densityDpi;
-        int dp;
-
-        if (prefs.smallIconMode) {
-            dp = SMALL_WIDTH_DP;
-        }
-        else {
-            dp = LARGE_WIDTH_DP;
-        }
+        int dp = LARGE_WIDTH_DP;
 
         double scalingDivisor = ART_WIDTH_PX / (dp * (dpi / 160.0));
         if (scalingDivisor < 1.0) {

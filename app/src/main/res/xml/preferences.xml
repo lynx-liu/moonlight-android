@@ -212,10 +212,6 @@
             android:title="@string/title_checkbox_enable_pip"
             android:summary="@string/summary_checkbox_enable_pip"
             android:defaultValue="false" />
-        <com.limelight.preferences.SmallIconCheckboxPreference
-            android:key="checkbox_small_icon_mode"
-            android:title="@string/title_checkbox_small_icon_mode"
-            android:summary="@string/summary_checkbox_small_icon_mode" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_advanced_settings"
         android:key="category_advanced_settings">
