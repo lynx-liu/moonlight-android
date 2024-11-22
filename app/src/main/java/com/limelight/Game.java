@@ -17,6 +17,7 @@ import com.limelight.binding.video.CrashListener;
 import com.limelight.binding.video.MediaCodecDecoderRenderer;
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.binding.video.PerfOverlayListener;
+import com.limelight.binding.video.VideoStats;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.NvConnectionListener;
 import com.limelight.nvstream.StreamConfiguration;
@@ -2638,11 +2639,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     @Override
-    public void onPerfUpdate(final String text) {
+    public void onPerfUpdate(final int width, final int height, final float totalFps, final float receivedFps, final float renderedFps, final String decoder, final long rttInfo, final VideoStats lastTwo) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getString(R.string.perf_overlay_streamdetails, width + "x" + height, totalFps)).append('\n');
+        sb.append(getString(R.string.perf_overlay_decoder, decoder)).append('\n');
+        sb.append(getString(R.string.perf_overlay_incomingfps, receivedFps)).append('\n');
+        sb.append(getString(R.string.perf_overlay_renderingfps, renderedFps)).append('\n');
+        sb.append(getString(R.string.perf_overlay_netdrops,
+                (float)lastTwo.framesLost / lastTwo.totalFrames * 100)).append('\n');
+        sb.append(getString(R.string.perf_overlay_netlatency,
+                (int)(rttInfo >> 32), (int)rttInfo)).append('\n');
+        float decodeTimeMs = (float)lastTwo.decoderTimeMs / lastTwo.totalFramesReceived;
+        sb.append(getString(R.string.perf_overlay_dectime, decodeTimeMs)).append('\n');
+        sb.append(getString(R.string.perf_overlay_hostprocessinglatency,
+                lastTwo.framesWithHostProcessingLatency>0? (float)lastTwo.totalHostProcessingLatency / 10 / lastTwo.framesWithHostProcessingLatency:0,
+                (float)lastTwo.minHostProcessingLatency / 10,
+                (float)lastTwo.maxHostProcessingLatency / 10));
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                performanceOverlayView.setText(text);
+                performanceOverlayView.setText(sb.toString());
             }
         });
     }
