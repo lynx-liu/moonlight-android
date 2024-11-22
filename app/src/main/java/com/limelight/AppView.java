@@ -210,6 +210,21 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 } catch (XmlPullParserException | IOException e) {
                     e.printStackTrace();
                 }
+
+                try {
+                    List<NvApp> appList = NvHTTP.getAppListByReader(new StringReader(details.rawAppList));
+                    AppView.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ServerHelper.doStart(AppView.this, appList.get(0), computer, managerBinder);
+                            finish();
+                        }
+                    });
+                } catch (XmlPullParserException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
