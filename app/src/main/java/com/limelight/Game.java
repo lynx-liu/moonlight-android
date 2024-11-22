@@ -30,6 +30,7 @@ import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.GlPreferences;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.ui.GameGestures;
+import com.limelight.ui.SrRenderer;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
@@ -86,6 +87,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 
 public class Game extends Activity implements SurfaceHolder.Callback,
@@ -532,7 +536,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         // The connection will be started when the surface gets created
-        streamView.getHolder().addCallback(this);
+        //streamView.getHolder().addCallback(this);
+        streamView.setRenderer(srRenderer);
     }
 
     private void setPreferredOrientationForCurrentDisplay() {
@@ -2552,6 +2557,82 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
     }
+
+    private SrRenderer srRenderer = new SrRenderer() {
+        @Override
+        public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+            super.onSurfaceCreated(unused, config);
+            float desiredFrameRate;
+
+            surfaceCreated = true;
+
+            // Android will pick the lowest matching refresh rate for a given frame rate value, so we want
+            // to report the true FPS value if refresh rate reduction is enabled. We also report the true
+            // FPS value if there's no suitable matching refresh rate. In that case, Android could try to
+            // select a lower refresh rate that avoids uneven pull-down (ex: 30 Hz for a 60 FPS stream on
+            // a display that maxes out at 50 Hz).
+            if (mayReduceRefreshRate() || desiredRefreshRate < prefConfig.fps) {
+                desiredFrameRate = prefConfig.fps;
+            }
+            else {
+                // Otherwise, we will pretend that our frame rate matches the refresh rate we picked in
+                // prepareDisplayForRendering(). This will usually be the highest refresh rate that our
+                // frame rate evenly divides into, which ensures the lowest possible display latency.
+                desiredFrameRate = desiredRefreshRate;
+            }
+
+            // Tell the OS about our frame rate to allow it to adapt the display refresh rate appropriately
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // We want to change frame rate even if it's not seamless, since prepareDisplayForRendering()
+                // will not set the display mode on S+ if it only differs by the refresh rate. It depends
+                // on us to trigger the frame rate switch here.
+                getSurface().setFrameRate(desiredFrameRate,
+                        Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE,
+                        Surface.CHANGE_FRAME_RATE_ALWAYS);
+            }
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                getSurface().setFrameRate(desiredFrameRate,
+                        Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
+            }
+        }
+
+        @Override
+        public void onSurfaceChanged(GL10 unused, int width, int height) {
+            super.onSurfaceChanged(unused, width, height);
+
+            if (!surfaceCreated) {
+                throw new IllegalStateException("Surface changed before creation!");
+            }
+
+            if (!attemptedConnection) {
+                attemptedConnection = true;
+
+                // Update GameManager state to indicate we're "loading" while connecting
+                UiHelper.notifyStreamConnecting(Game.this);
+
+                decoderRenderer.setSurface(getSurface());
+                conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
+                        decoderRenderer, Game.this);
+            }
+        }
+
+        @Override
+        public synchronized void onSurfaceDestroyed() {
+            if (!surfaceCreated) {
+                throw new IllegalStateException("Surface destroyed before creation!");
+            }
+
+            if (attemptedConnection) {
+                // Let the decoder know immediately that the surface is gone
+                decoderRenderer.prepareForStop();
+
+                if (connected) {
+                    stopConnection();
+                }
+            }
+            super.onSurfaceDestroyed();
+        }
+    };
 
     @Override
     public void mouseMove(int deltaX, int deltaY) {
