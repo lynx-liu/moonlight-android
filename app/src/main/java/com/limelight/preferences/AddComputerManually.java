@@ -268,8 +268,6 @@ public class AddComputerManually extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UiHelper.setLocale(this);
-
         setContentView(R.layout.activity_add_computer_manually);
 
         UiHelper.notifyNewRootView(this);
