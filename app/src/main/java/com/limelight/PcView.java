@@ -113,8 +113,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
     private final static int RESUME_ID = 6;
     private final static int QUIT_ID = 7;
     private final static int VIEW_DETAILS_ID = 8;
-    private final static int FULL_APP_LIST_ID = 9;
-    private final static int TEST_NETWORK_ID = 10;
+    private final static int TEST_NETWORK_ID = 9;
 
     private void initializeViews() {
         setContentView(R.layout.activity_pc_view);
@@ -340,8 +339,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 menu.add(Menu.NONE, RESUME_ID, 1, getResources().getString(R.string.applist_menu_resume));
                 menu.add(Menu.NONE, QUIT_ID, 2, getResources().getString(R.string.applist_menu_quit));
             }
-
-            menu.add(Menu.NONE, FULL_APP_LIST_ID, 4, getResources().getString(R.string.pcview_menu_app_list));
         }
 
         menu.add(Menu.NONE, TEST_NETWORK_ID, 5, getResources().getString(R.string.pcview_menu_test_network));
@@ -560,7 +557,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         Intent i = new Intent(this, AppView.class);
         i.putExtra(AppView.NAME_EXTRA, computer.name);
         i.putExtra(AppView.UUID_EXTRA, computer.uuid);
-        i.putExtra(AppView.NEW_PAIR_EXTRA, newlyPaired);
         startActivity(i);
     }
 
@@ -596,10 +592,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                         removeComputer(computer.details);
                     }
                 }, null);
-                return true;
-
-            case FULL_APP_LIST_ID:
-                doAppList(computer.details, false, true);
                 return true;
 
             case RESUME_ID:
