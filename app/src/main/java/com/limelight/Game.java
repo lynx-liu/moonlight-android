@@ -989,7 +989,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // Ungrab input to prevent further input device notifications
             setInputGrabState(false);
         }
-
+        audioRecordHelper.stop();
         super.onPause();
     }
 
@@ -2090,6 +2090,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             connecting = connected = false;
 
             controllerHandler.stop();
+            audioRecordHelper.stop();
 
             // Update GameManager state to indicate we're no longer in game
             UiHelper.notifyStreamEnded(this);
@@ -2162,6 +2163,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 // Stop processing controller input
                 controllerHandler.stop();
+                audioRecordHelper.stop();
 
                 // Ungrab input
                 setInputGrabState(false);
@@ -2417,8 +2419,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         if (attemptedConnection) {
-            audioRecordHelper.stop();
-
             // Let the decoder know immediately that the surface is gone
             decoderRenderer.prepareForStop();
 
@@ -2495,7 +2495,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
 
             if (attemptedConnection) {
-                audioRecordHelper.stop();
 
                 // Let the decoder know immediately that the surface is gone
                 decoderRenderer.prepareForStop();

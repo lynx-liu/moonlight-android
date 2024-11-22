@@ -71,6 +71,20 @@ public final class AudioTcpClient extends TcpClient {
         }
     }
 
+    @Override
+    public void interrupt() {
+        super.interrupt();
+
+        if(dataInputStream!=null) {
+            try {
+                dataInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dataInputStream = null;
+        }
+    }
+
     public void sendLogin(String sessionId) {
         if(dataOutputStream==null)
             return;
@@ -128,6 +142,5 @@ public final class AudioTcpClient extends TcpClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d(TAG,"sendAudioData end threadID:"+Thread.currentThread().getId());
     }
 }
