@@ -15,7 +15,6 @@ import com.limelight.nvstream.http.PairingManager;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
-import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
@@ -56,8 +55,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
     private ComputerDetails computer;
     private ComputerManagerService.ApplistPoller poller;
-    private SpinnerDialog blockingLoadSpinner;
-    private String lastRawApplist;
     private int lastRunningAppId;
     private boolean suspendGridUpdates;
     private boolean inForeground;
@@ -119,12 +116,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                     // is set to prevent us from reaching updateUiWithServerinfo() and
                     // touching the appGridAdapter prior to initialization.
                     managerBinder = localBinder;
-
-                    // Load the app grid with cached data (if possible).
-                    // This must be done _before_ startComputerUpdates()
-                    // so the initial serverinfo response can update the running
-                    // icon.
-                    populateAppGridWithCache();
 
                     // Start updates
                     startComputerUpdates();
@@ -230,7 +221,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 }
 
                 // App list is the same or empty
-                if (details.rawAppList == null || details.rawAppList.equals(lastRawApplist)) {
+                if (details.rawAppList == null) {
 
                     // Let's check if the running app ID changed
                     if (details.runningGameId != lastRunningAppId) {
@@ -243,16 +234,10 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 }
 
                 lastRunningAppId = details.runningGameId;
-                lastRawApplist = details.rawAppList;
 
                 try {
                     updateUiWithAppList(NvHTTP.getAppListByReader(new StringReader(details.rawAppList)));
                     updateUiWithServerinfo(details);
-
-                    if (blockingLoadSpinner != null) {
-                        blockingLoadSpinner.dismiss();
-                        blockingLoadSpinner = null;
-                    }
                 } catch (XmlPullParserException | IOException e) {
                     e.printStackTrace();
                 }
@@ -330,29 +315,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 .apply();
 
         appGridAdapter.updateHiddenApps(hiddenAppIds, hideImmediately);
-    }
-
-    private void populateAppGridWithCache() {
-        try {
-            // Try to load from cache
-            lastRawApplist = CacheHelper.readInputStreamToString(CacheHelper.openCacheFileForInput(getCacheDir(), "applist", uuidString));
-            List<NvApp> applist = NvHTTP.getAppListByReader(new StringReader(lastRawApplist));
-            updateUiWithAppList(applist);
-            LimeLog.info("Loaded applist from cache");
-        } catch (IOException | XmlPullParserException e) {
-            if (lastRawApplist != null) {
-                LimeLog.warning("Saved applist corrupted: "+lastRawApplist);
-                e.printStackTrace();
-            }
-            LimeLog.info("Loading applist from the network");
-            // We'll need to load from the network
-            loadAppsBlocking();
-        }
-    }
-
-    private void loadAppsBlocking() {
-        blockingLoadSpinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.applist_refresh_title),
-                getResources().getString(R.string.applist_refresh_msg), true);
     }
 
     @Override
