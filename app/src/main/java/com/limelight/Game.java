@@ -20,6 +20,7 @@ import com.limelight.binding.video.PerfOverlayListener;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.NvConnectionListener;
 import com.limelight.nvstream.StreamConfiguration;
+import com.limelight.nvstream.av.audio.AudioRecordHelper;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
@@ -152,6 +153,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private TextView performanceOverlayView;
 
     private MediaCodecDecoderRenderer decoderRenderer;
+    private AudioRecordHelper audioRecordHelper;
     private boolean reportedCrash;
 
     private WifiManager.WifiLock highPerfWifiLock;
@@ -396,6 +398,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 willStreamHdr,
                 glPrefs.glRenderer,
                 this);
+
+        audioRecordHelper = new AudioRecordHelper();
 
         // Don't stream HDR if the decoder can't support it
         if (willStreamHdr && !decoderRenderer.isHevcMain10Hdr10Supported() && !decoderRenderer.isAv1Main10Supported()) {
@@ -2503,6 +2507,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             decoderRenderer.setRenderTarget(holder);
             conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
                     decoderRenderer, Game.this);
+
+            audioRecordHelper.start();
         }
     }
 
@@ -2549,6 +2555,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         if (attemptedConnection) {
+            audioRecordHelper.stop();
+
             // Let the decoder know immediately that the surface is gone
             decoderRenderer.prepareForStop();
 
@@ -2613,6 +2621,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 decoderRenderer.setSurface(getSurface());
                 conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
                         decoderRenderer, Game.this);
+
+                audioRecordHelper.start();
             }
         }
 
@@ -2623,6 +2633,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
 
             if (attemptedConnection) {
+                audioRecordHelper.stop();
+
                 // Let the decoder know immediately that the surface is gone
                 decoderRenderer.prepareForStop();
 
