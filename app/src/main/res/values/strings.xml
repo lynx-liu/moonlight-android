@@ -115,9 +115,7 @@
     <string name="applist_connect_msg">Connecting to PC…</string>
     <string name="applist_menu_resume">Resume Session</string>
     <string name="applist_menu_quit">Quit Session</string>
-    <string name="applist_menu_quit_and_start">Quit Current Game and Start</string>
     <string name="applist_menu_cancel">Cancel</string>
-    <string name="applist_menu_details">View Details</string>
     <string name="applist_menu_tv_channel">Add to Channel</string>
     <string name="applist_refresh_title">App List</string>
     <string name="applist_refresh_msg">Refreshing apps…</string>

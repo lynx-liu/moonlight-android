@@ -79,9 +79,7 @@
     <string name="applist_connect_msg"> 正在连接电脑…… </string>
     <string name="applist_menu_resume"> 恢复串流 </string>
     <string name="applist_menu_quit"> 退出串流 </string>
-    <string name="applist_menu_quit_and_start"> 退出当前游戏并开始这个游戏 </string>
     <string name="applist_menu_cancel"> 取消 </string>
-    <string name="applist_menu_details"> 查看详情 </string>
     <string name="applist_menu_tv_channel"> 添加到频道 </string>
     <string name="applist_refresh_title"> 游戏列表 </string>
     <string name="applist_refresh_msg"> 刷新中…… </string>

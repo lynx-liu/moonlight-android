@@ -50,10 +50,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     private int lastRunningAppId;
     private boolean suspendGridUpdates;
     private boolean inForeground;
-    private final static int START_OR_RESUME_ID = 1;
-    private final static int QUIT_ID = 2;
-    private final static int START_WITH_QUIT = 4;
-    private final static int VIEW_DETAILS_ID = 5;
+    private final static int QUIT_ID = 1;
     public final static String NAME_EXTRA = "Name";
     public final static String UUID_EXTRA = "UUID";
     public final static String NEW_PAIR_EXTRA = "NewPair";
@@ -307,19 +304,9 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
         if (lastRunningAppId != 0) {
             if (lastRunningAppId == selectedApp.app.getAppId()) {
-                menu.add(Menu.NONE, START_OR_RESUME_ID, 1, getResources().getString(R.string.applist_menu_resume));
-                menu.add(Menu.NONE, QUIT_ID, 2, getResources().getString(R.string.applist_menu_quit));
-            }
-            else {
-                menu.add(Menu.NONE, START_WITH_QUIT, 1, getResources().getString(R.string.applist_menu_quit_and_start));
+                menu.add(Menu.NONE, QUIT_ID, 1, getResources().getString(R.string.applist_menu_quit));
             }
         }
-
-        menu.add(Menu.NONE, VIEW_DETAILS_ID, 3, getResources().getString(R.string.applist_menu_details));
-    }
-
-    @Override
-    public void onContextMenuClosed(Menu menu) {
     }
 
     @Override
@@ -327,21 +314,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         final AppObject app = (AppObject) appGridAdapter.getItem(info.position);
         switch (item.getItemId()) {
-            case START_WITH_QUIT:
-                // Display a confirmation dialog first
-                UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
-                    @Override
-                    public void run() {
-                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder);
-                    }
-                }, null);
-                return true;
-
-            case START_OR_RESUME_ID:
-                // Resume is the same as start for us
-                ServerHelper.doStart(AppView.this, app.app, computer, managerBinder);
-                return true;
-
             case QUIT_ID:
                 // Display a confirmation dialog first
                 UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
@@ -361,10 +333,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                         });
                     }
                 }, null);
-                return true;
-
-            case VIEW_DETAILS_ID:
-                Dialog.displayDialog(AppView.this, getResources().getString(R.string.title_details), app.app.toString(), false);
                 return true;
 
             default:
@@ -490,13 +458,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos,
                                     long id) {
                 AppObject app = (AppObject) appGridAdapter.getItem(pos);
-
-                // Only open the context menu if something is running, otherwise start it
-                if (lastRunningAppId != 0) {
-                    openContextMenu(arg1);
-                } else {
-                    ServerHelper.doStart(AppView.this, app.app, computer, managerBinder);
-                }
+                ServerHelper.doStart(AppView.this, app.app, computer, managerBinder);
             }
         });
         UiHelper.applyStatusBarPadding(listView);
