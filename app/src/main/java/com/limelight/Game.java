@@ -399,7 +399,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 glPrefs.glRenderer,
                 this);
 
-        audioRecordHelper = new AudioRecordHelper();
+        audioRecordHelper = new AudioRecordHelper(host);
 
         // Don't stream HDR if the decoder can't support it
         if (willStreamHdr && !decoderRenderer.isHevcMain10Hdr10Supported() && !decoderRenderer.isAv1Main10Supported()) {

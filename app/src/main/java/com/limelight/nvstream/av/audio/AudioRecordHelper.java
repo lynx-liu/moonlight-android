@@ -8,6 +8,8 @@ import android.media.MediaRecorder;
 import android.media.audiofx.AcousticEchoCanceler;
 import android.util.Log;
 
+import com.limelight.nvstream.AudioTcpClient;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,8 +34,14 @@ public class AudioRecordHelper {
     private int mAdtsSize = 0;
     private static final int BUFF_SIZE = 2048;
 
-    public AudioRecordHelper() {
+    private AudioTcpClient audioTcpClient;
+    private String host;
+    private int audioUpPortTcp = 48031;
+
+    public AudioRecordHelper(String host) {
+        this.host = host;
     }
+
     public boolean isRecording(){
         return mIsRecording;
     }
@@ -45,6 +53,10 @@ public class AudioRecordHelper {
             return;
         }
         mIsRecording = true;
+
+        audioTcpClient = new AudioTcpClient(host,audioUpPortTcp);
+        audioTcpClient.start();
+
         queue = new ArrayBlockingQueue<byte[]>(10);
         try{
             initAudioEncoder();
@@ -134,7 +146,7 @@ public class AudioRecordHelper {
 
                     outputBuffer.position(mAudioEncodeBufferInfo.offset);
 
-                    //TODO send to server
+                    if(audioTcpClient!=null) audioTcpClient.sendAudioData(chunkAudio,System.currentTimeMillis(), (byte) 0x10, (byte) 0x04, (byte) 0x01, (byte) 0x00);
 
                     mAudioEncoder.releaseOutputBuffer(outputIndex, false);
                     outputIndex = mAudioEncoder.dequeueOutputBuffer(mAudioEncodeBufferInfo, 10000);
@@ -198,7 +210,7 @@ public class AudioRecordHelper {
 
         try {
             mAudioEncoder = MediaCodec.createEncoderByType(mimeType);
-            MediaFormat format = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, mSampleRate, 1);
+            MediaFormat format = MediaFormat.createAudioFormat(mimeType, mSampleRate, 2);
             format.setInteger(MediaFormat.KEY_BIT_RATE, 96000);
             format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 8192);
             mAudioEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
@@ -219,7 +231,7 @@ public class AudioRecordHelper {
 
     private void initAudioRecord() {
         int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
-        int channelConfig = AudioFormat.CHANNEL_IN_MONO;
+        int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
         int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
         int minBufferSize = AudioRecord.getMinBufferSize(mSampleRate, channelConfig, audioFormat);
         mAudioRecorder = new AudioRecord(audioSource, mSampleRate, channelConfig, audioFormat, Math.max(minBufferSize, BUFF_SIZE));
@@ -281,6 +293,16 @@ public class AudioRecordHelper {
                 mAudioEncoder = null;
             }
 
+        }
+
+        if(audioTcpClient!=null) {
+            audioTcpClient.interrupt();
+            try {
+                audioTcpClient.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            audioTcpClient = null;
         }
         return true;
     }
