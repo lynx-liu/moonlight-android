@@ -1,7 +1,5 @@
 package com.limelight.nvstream.http;
 
-import android.os.Build;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +33,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
@@ -46,7 +42,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import com.limelight.BuildConfig;
 import com.limelight.LimeLog;
 import com.limelight.nvstream.ConnectionContext;
 import com.limelight.nvstream.http.PairingManager.PairState;
@@ -71,7 +66,7 @@ public class NvHTTP {
     public static final int READ_TIMEOUT = 7000;
 
     // Print URL and content to logcat on debug builds
-    private static boolean verbose = BuildConfig.DEBUG;
+    private static boolean verbose = false;
 
     private HttpUrl baseUrlHttp;
 
