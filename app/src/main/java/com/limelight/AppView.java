@@ -2,7 +2,6 @@ package com.limelight;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashSet;
 import java.util.List;
 
 import com.limelight.computers.ComputerManagerListener;
@@ -17,7 +16,6 @@ import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
-import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
 
@@ -26,10 +24,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -41,7 +36,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -51,8 +45,6 @@ import org.xmlpull.v1.XmlPullParserException;
 public class AppView extends Activity implements AdapterFragmentCallbacks {
     private AppGridAdapter appGridAdapter;
     private String uuidString;
-    private ShortcutHelper shortcutHelper;
-
     private ComputerDetails computer;
     private ComputerManagerService.ApplistPoller poller;
     private int lastRunningAppId;
@@ -62,8 +54,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     private final static int QUIT_ID = 2;
     private final static int START_WITH_QUIT = 4;
     private final static int VIEW_DETAILS_ID = 5;
-    private final static int CREATE_SHORTCUT_ID = 6;
-
     public final static String NAME_EXTRA = "Name";
     public final static String UUID_EXTRA = "UUID";
     public final static String NEW_PAIR_EXTRA = "NewPair";
@@ -88,10 +78,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                         return;
                     }
 
-                    // Add a launcher shortcut for this PC (forced, since this is user interaction)
-                    shortcutHelper.createAppViewShortcut(computer, true, getIntent().getBooleanExtra(NEW_PAIR_EXTRA, false));
-                    shortcutHelper.reportComputerShortcutUsed(computer);
-
                     try {
                         appGridAdapter = new AppGridAdapter(AppView.this,
                                 PreferenceConfiguration.readPreferences(AppView.this),
@@ -101,8 +87,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                         finish();
                         return;
                     }
-
-                    appGridAdapter.updateHiddenApps(hiddenAppIds, true);
 
                     // Now make the binder visible. We must do this after appGridAdapter
                     // is set to prevent us from reaching updateUiWithServerinfo() and
@@ -199,10 +183,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                     AppView.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // Disable shortcuts referencing this PC for now
-                            shortcutHelper.disableComputerShortcut(details,
-                                    getResources().getString(R.string.scut_not_paired));
-
                             // Display a toast to the user and quit the activity
                             Toast.makeText(AppView.this, getResources().getText(R.string.scut_not_paired), Toast.LENGTH_SHORT).show();
                             finish();
@@ -263,8 +243,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
         // Assume we're in the foreground when created to avoid a race
         // between binding to CMS and onResume()
         inForeground = true;
-
-        shortcutHelper = new ShortcutHelper(this);
 
         setContentView(R.layout.activity_app_view);
 
@@ -337,19 +315,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Only add an option to create shortcut if box art is loaded
-            // and when we're in grid-mode (not list-mode).
-            ImageView appImageView = info.targetView.findViewById(R.id.grid_image);
-            if (appImageView != null) {
-                // We have a grid ImageView, so we must be in grid-mode
-                BitmapDrawable drawable = (BitmapDrawable)appImageView.getDrawable();
-                if (drawable != null && drawable.getBitmap() != null) {
-                    // We have a bitmap loaded too
-                    menu.add(Menu.NONE, CREATE_SHORTCUT_ID, 5, getResources().getString(R.string.applist_menu_scut));
-                }
-            }
-        }
         menu.add(Menu.NONE, VIEW_DETAILS_ID, 3, getResources().getString(R.string.applist_menu_details));
     }
 
@@ -400,14 +365,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
             case VIEW_DETAILS_ID:
                 Dialog.displayDialog(AppView.this, getResources().getString(R.string.title_details), app.app.toString(), false);
-                return true;
-
-            case CREATE_SHORTCUT_ID:
-                ImageView appImageView = info.targetView.findViewById(R.id.grid_image);
-                Bitmap appBits = ((BitmapDrawable)appImageView.getDrawable()).getBitmap();
-                if (!shortcutHelper.createPinnedGameShortcut(computer, app.app, appBits)) {
-                    Toast.makeText(AppView.this, getResources().getString(R.string.unable_to_pin_shortcut), Toast.LENGTH_LONG).show();
-                }
                 return true;
 
             default:
@@ -481,12 +438,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                     if (!foundExistingApp) {
                         // This app must be new
                         appGridAdapter.addApp(new AppObject(app));
-
-                        // We could have a leftover shortcut from last time this PC was paired
-                        // or if this app was removed then added again. Enable those shortcuts
-                        // again if present.
-                        shortcutHelper.enableAppShortcut(computer, app);
-
                         updated = true;
                     }
                 }
@@ -507,7 +458,6 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
                     // This app was removed in the latest app list
                     if (!foundExistingApp) {
-                        shortcutHelper.disableAppShortcut(computer, existingApp.app, "App removed from PC");
                         appGridAdapter.removeApp(existingApp);
                         updated = true;
 

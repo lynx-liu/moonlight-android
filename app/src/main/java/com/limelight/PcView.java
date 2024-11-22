@@ -24,7 +24,6 @@ import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
-import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.UiHelper;
 
 import android.app.Activity;
@@ -61,7 +60,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class PcView extends Activity implements AdapterFragmentCallbacks {
     private RelativeLayout noPcFoundLayout;
     private PcGridAdapter pcGridAdapter;
-    private ShortcutHelper shortcutHelper;
     private ComputerManagerService.ComputerManagerBinder managerBinder;
     private boolean freezeUpdates, runningPolling, inForeground, completeOnCreateCalled;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -216,8 +214,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
     private void completeOnCreate() {
         completeOnCreateCalled = true;
 
-        shortcutHelper = new ShortcutHelper(this);
-
         // Bind to the computer manager service
         bindService(new Intent(PcView.this, ComputerManagerService.class), serviceConnection,
                 Service.BIND_AUTO_CREATE);
@@ -242,11 +238,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                                 updateComputer(details);
                             }
                         });
-
-                        // Add a launcher shortcut for this PC (off the main thread to prevent ANRs)
-                        if (details.pairState == PairState.PAIRED) {
-                            shortcutHelper.createAppViewShortcutForOnlineHost(details);
-                        }
                     }
                 }
             });
@@ -570,7 +561,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         i.putExtra(AppView.NAME_EXTRA, computer.name);
         i.putExtra(AppView.UUID_EXTRA, computer.uuid);
         i.putExtra(AppView.NEW_PAIR_EXTRA, newlyPaired);
-        i.putExtra(AppView.SHOW_HIDDEN_APPS_EXTRA, showHiddenGames);
         startActivity(i);
     }
 
@@ -655,20 +645,10 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         new DiskAssetLoader(this).deleteAssetsForComputer(details.uuid);
 
-        // Delete hidden games preference value
-        getSharedPreferences(AppView.HIDDEN_APPS_PREF_FILENAME, MODE_PRIVATE)
-                .edit()
-                .remove(details.uuid)
-                .apply();
-
         for (int i = 0; i < pcGridAdapter.getCount(); i++) {
             ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(i);
 
             if (details.equals(computer.details)) {
-                // Disable or delete shortcuts referencing this PC
-                shortcutHelper.disableComputerShortcut(details,
-                        getResources().getString(R.string.scut_deleted_pc));
-
                 pcGridAdapter.removeComputer(computer);
                 pcGridAdapter.notifyDataSetChanged();
 

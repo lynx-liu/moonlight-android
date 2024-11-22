@@ -46,7 +46,6 @@
     <string name="title_decoding_reset"> 重置视频设置 </string>
     <string name="message_decoding_reset"> 由于设备的视频解码器在你选择的串流设置上持续崩溃，已重置你的串流设置。 </string>
     <string name="error_usb_prohibited"> 设备管理员已禁止USB访问。请检查您的Knox或MDM设置。 </string>
-    <string name="unable_to_pin_shortcut"> 您当前的桌面启动器不允许创建长按子菜单。 </string>
     <!-- Start application messages -->
     <string name="conn_establishing_title"> 建立连接中 </string>
     <string name="conn_establishing_msg"> 启动连接中 </string>
@@ -83,7 +82,6 @@
     <string name="applist_menu_quit_and_start"> 退出当前游戏并开始这个游戏 </string>
     <string name="applist_menu_cancel"> 取消 </string>
     <string name="applist_menu_details"> 查看详情 </string>
-    <string name="applist_menu_scut"> 创建快捷方式 </string>
     <string name="applist_menu_tv_channel"> 添加到频道 </string>
     <string name="applist_refresh_title"> 游戏列表 </string>
     <string name="applist_refresh_msg"> 刷新中…… </string>
