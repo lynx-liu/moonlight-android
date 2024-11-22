@@ -63,7 +63,7 @@ public class AbsoluteTouchContext implements TouchContext {
     private static final int DOUBLE_TAP_TIME_THRESHOLD = 250;
     private static final int DOUBLE_TAP_DISTANCE_THRESHOLD = 60;
 
-    private static final int TOUCH_DOWN_DEAD_ZONE_TIME_THRESHOLD = 100;
+    private static final int TOUCH_DOWN_DEAD_ZONE_TIME_THRESHOLD = 0;
     private static final int TOUCH_DOWN_DEAD_ZONE_DISTANCE_THRESHOLD = 20;
 
     public AbsoluteTouchContext(NvConnection conn, int actionIndex, View view)
